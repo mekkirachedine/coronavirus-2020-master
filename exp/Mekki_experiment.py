@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, '..')
 
 from utils import data
+from src import distances, k_nearest_neighbor
 import os
 import sklearn
 import numpy as np
@@ -111,11 +112,16 @@ for i in range(0, N):
     else:
         survival_rates.append(recovery_rates[i] / death_rates[i])
 
-f = np.array(features)
-t = np.array(survival_rates)
+#print("here")
 
-print(f)
-print(t)
+the_model = k_nearest_neighbor.KNearestNeighbor(N_NEIGHBORS, distance_measure='manhattan', aggregator='mean')
+the_model.fit(features, survival_rates)
+
+test_features = np.array([[1, 0]])
+the_target_values, the_targets = the_model.predict(test_features)
+
+print(the_targets)
+print(the_target_values)
 
 
 
