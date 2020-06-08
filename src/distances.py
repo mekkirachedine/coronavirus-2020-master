@@ -50,10 +50,10 @@ def manhattan_distances(X, Y):
     # raise NotImplementedError()
 
 def manhattan_distance(point1, point2):
-    sum = 0
-    for dimension in range(0, len(point1)):
-        sum += abs(point1[dimension] - point2[dimension])
-    return sum
+    lat_dist = abs(point1[0] - point2[0])
+    long_dist = abs(point1[1] - point2[1])
+    true_long_dist = min(long_dist, 360 - long_dist)
+    return lat_dist + true_long_dist
 
 def cosine_distances(X, Y):
     """Compute Cosine distance between the rows of two matrices X (shape MxK) 

@@ -61,12 +61,31 @@ for i in range(0, N):
     example.append(confirmed["Long"][i])
     features.append(example)
 
-death_rates = []
+total_cases = []
+for i in range(0, N):
+    j = 0
+    while True:
+        if j == len(confirmed["Country/Region"]):
+            total_cases.append('N/A')
+            break
+
+        if isinstance(confirmed["Province/State"][j], float):
+            the_name = confirmed["Country/Region"][j]
+        else:
+            the_name = confirmed["Country/Region"][j] + ' ' + confirmed["Country/Region"][j]
+
+        if features[i][0] == the_name:
+            total_cases.append(confirmed["5/19/2020"][j])
+            break
+        else:
+            j += 1
+
+total_deaths = []
 for i in range(0, N):
     j = 0
     while True:
         if j == len(deaths["Country/Region"]):
-            death_rates.append('N/A')
+            total_deaths.append('N/A')
             break
 
         if isinstance(deaths["Province/State"][j], float):
@@ -75,17 +94,17 @@ for i in range(0, N):
             the_name = deaths["Country/Region"][j] + ' ' + deaths["Country/Region"][j]
 
         if features[i][0] == the_name:
-            death_rates.append(deaths["5/19/2020"][j])
+            total_deaths.append(deaths["5/19/2020"][j])
             break
         else:
             j += 1
 
-recovery_rates = []
+total_recoveries = []
 for i in range(0, N):
     j = 0
     while True:
         if j == len(recoveries["Country/Region"]):
-            recovery_rates.append('N/A')
+            total_recoveries.append('N/A')
             break
 
         if isinstance(recoveries["Province/State"][j], float):
@@ -94,34 +113,114 @@ for i in range(0, N):
 
             the_name = recoveries["Country/Region"][j] + ' ' + recoveries["Country/Region"][j]
         if features[i][0] == the_name:
-            recovery_rates.append(recoveries["5/19/2020"][j])
+            total_recoveries.append(recoveries["5/19/2020"][j])
             break
         else:
             j += 1
 
+death_rates = []
+for i in range(0, N):
+    if total_deaths[i] == 'N/A' or total_cases[i] == 'N/A':
+        death_rates.append('N/A')
+    elif total_cases[i] == 0:
+        death_rates.append('N/A')
+    elif total_deaths[i] == 0:
+        death_rates.append(0)
+    else:
+        death_rates.append(total_deaths[i] / total_cases[i])
+
+recovery_rates = []
+for i in range(0, N):
+    if total_recoveries[i] == 'N/A' or total_cases[i] == 'N/A':
+        recovery_rates.append('N/A')
+    elif total_cases[i] == 0:
+        recovery_rates.append('N/A')
+    elif total_recoveries[i] == 0:
+        recovery_rates.append(0)
+    else:
+        recovery_rates.append(total_recoveries[i] / total_cases[i])
+
 survival_rates = []
 for i in range(0, N):
-    if death_rates[i] == 'N/A' or recovery_rates[i] == 'N/A':
+    if total_deaths[i] == 'N/A' or total_recoveries[i] == 'N/A':
         survival_rates.append('N/A')
-    elif death_rates[i] == 0 and recovery_rates[i] == 0:
+    elif total_deaths[i] == 0 and total_recoveries[i] == 0:
         survival_rates.append(1)
-    elif death_rates[i] == 0:
+    elif total_deaths[i] == 0:
         survival_rates.append(1000)
-    elif recovery_rates[i] == 0:
+    elif total_recoveries[i] == 0:
         survival_rates.append(0)
     else:
-        survival_rates.append(recovery_rates[i] / death_rates[i])
+        survival_rates.append(total_recoveries[i] / total_deaths[i])
 
-#print("here")
+#input_latitude = 30
+#input_longitude = -160
 
-the_model = k_nearest_neighbor.KNearestNeighbor(N_NEIGHBORS, distance_measure='manhattan', aggregator='mean')
-the_model.fit(features, survival_rates)
+#the_model = k_nearest_neighbor.KNearestNeighbor(N_NEIGHBORS, distance_measure='manhattan', aggregator='mean')
 
-test_features = np.array([[1, 0]])
-the_target_values, the_targets = the_model.predict(test_features)
+#the_model.fit(features, death_rates)
 
-print(the_targets)
-print(the_target_values)
+#test_features = np.array([[input_latitude, input_longitude]])
+#the_target_values, the_targets = the_model.predict(test_features)
+
+#print("\n")
+#print("Closest Locations: ")
+#for target in the_targets:
+    #print(features[target][0])
+#print("\n")
+#print("Death Rate: ", the_target_values[0])
+
+#the_model.fit(features, recovery_rates)
+
+#test_features = np.array([[input_latitude, input_longitude]])
+#the_target_values, the_targets = the_model.predict(test_features)
+
+#print("\n")
+#print("Closest Locations: ")
+#for target in the_targets:
+    #print(features[target][0])
+#print("\n")
+#print("Recovery Rate: ", the_target_values[0])
+
+#the_model.fit(features, survival_rates)
+
+#test_features = np.array([[input_latitude, input_longitude]])
+#the_target_values, the_targets = the_model.predict(test_features)
+
+#print("\n")
+#print("Closest Locations: ")
+#for target in the_targets:
+    #print(features[target][0])
+#print("\n")
+#print("Survival Rate: ", the_target_values[0])
+
+the_model_d = k_nearest_neighbor.KNearestNeighbor(N_NEIGHBORS, distance_measure='manhattan', aggregator='mean')
+the_model_r = k_nearest_neighbor.KNearestNeighbor(N_NEIGHBORS, distance_measure='manhattan', aggregator='mean')
+the_model_s = k_nearest_neighbor.KNearestNeighbor(N_NEIGHBORS, distance_measure='manhattan', aggregator='mean')
+the_model_d.fit(features, death_rates)
+the_model_r.fit(features, recovery_rates)
+the_model_s.fit(features, survival_rates)
+death_values = np.zeros((13, 19))
+recovery_values = np.zeros((13, 19))
+survival_values = np.zeros((13, 19))
+
+for lat in range(0, 13):
+    for lon in range(0, 19):
+        test_feature = np.array([[(lat - 6) * 15, (lon - 9) * 20]])
+
+        value_d, d = the_model_d.predict(test_feature)
+        death_values[lat][lon] = value_d
+
+        value_r, r = the_model_r.predict(test_feature)
+        recovery_values[lat][lon] = value_r
+
+        value_s, s = the_model_s.predict(test_feature)
+        survival_values[lat][lon] = value_s
+
+print("Death Values: ", death_values)
+print("Recovery Values: ", recovery_values)
+print("Survival Values: ", survival_values)
+
 
 
 
