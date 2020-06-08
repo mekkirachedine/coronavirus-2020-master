@@ -18,6 +18,8 @@ from sklearn.neighbors import (
     DistanceMetric
 )
 import json
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # ------------ HYPERPARAMETERS -------------
 BASE_PATH = '../COVID-19/csse_covid_19_data/'
@@ -217,9 +219,18 @@ for lat in range(0, 13):
         value_s, s = the_model_s.predict(test_feature)
         survival_values[lat][lon] = value_s
 
-print("Death Values: ", death_values)
-print("Recovery Values: ", recovery_values)
-print("Survival Values: ", survival_values)
+#print("Death Values: ", death_values)
+#print("Recovery Values: ", recovery_values)
+#print("Survival Values: ", survival_values)
+plt.figure(figsize=(20,15))
+sns_plot = sns.heatmap(death_values)
+sns_plot.figure.savefig('cv_death_values')
+plt.figure(figsize=(20,15))
+sns_plot = sns.heatmap(recovery_values)
+sns_plot.figure.savefig('cv_recovery_values')
+plt.figure(figsize=(20,15))
+sns_plot = sns.heatmap(survival_values)
+sns_plot.figure.savefig('cv_survival_values')
 
 
 
